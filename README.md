@@ -5,6 +5,12 @@ seasonal workers), plus a monitoring layer that detects when the world changes
 and the model goes stale. Includes a small Flask web app (login, prediction,
 drift monitor page).
 
+![Predicted vs actual default rate after the shock](results/calibration_over_time.png)
+
+**Key finding:** after a simulated income shock, the model kept ranking borrowers
+well (AUC stayed high) but badly under-predicted risk (5.1% predicted vs 11.1%
+actual). Retraining monthly on recent labelled data recovered most of that gap.
+
 > **Data note:** real borrower histories are private, so this project runs on a
 > **simulated** borrower-month panel (3,000 borrowers x 36 months) with a known,
 > deliberately injected shock. Results below demonstrate that the pipeline and
@@ -72,8 +78,15 @@ a significance test did. Thresholds were not tuned to change this outcome.
 Input-only monitors say that *inputs moved*; only label-based monitoring confirms
 that *risk estimates are wrong*, so both are needed.
 
-Charts are in `results/`: `calibration_over_time.png`, `auc_over_time.png`,
-`psi_heatmap.png`; raw numbers in `monthly_metrics.csv`, `psi_by_month.csv`,
+**Ranking quality (AUC) stays high; the problem is calibration, not ranking:**
+
+![AUC by month, static vs adaptive model](results/auc_over_time.png)
+
+**Feature drift (PSI) stays below the usual warning level, even though the shock is real:**
+
+![Feature PSI heatmap by month](results/psi_heatmap.png)
+
+Raw numbers are in `results/`: `monthly_metrics.csv`, `psi_by_month.csv`,
 `ks_by_month.csv`, `summary.json`.
 
 ## Run it
