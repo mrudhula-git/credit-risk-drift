@@ -1,0 +1,62 @@
+{
+  "data": {
+    "rows": 93000,
+    "borrowers": 3000,
+    "default_rate_before_shock": 0.03370175438596491,
+    "default_rate_after_shock": 0.11180555555555556,
+    "synthetic": true
+  },
+  "validation_auc": {
+    "Logistic, basic features": 0.6923062668905035,
+    "Logistic, irregular-income features": 0.7841421033116425,
+    "Gradient boosting, irregular-income features": 0.7815552023558137
+  },
+  "chosen_model": "Logistic, irregular-income features",
+  "post_shock_mean": {
+    "static_auc": 0.8663723711619997,
+    "adaptive_auc": 0.8712956450684167,
+    "basic_features_auc": 0.698202198208874,
+    "static_brier": 0.08171996620870199,
+    "adaptive_brier": 0.07353479071776904,
+    "observed_rate": 0.11056666666666666,
+    "static_pred_rate": 0.0508918246934308,
+    "adaptive_pred_rate": 0.07662054579137532
+  },
+  "last_3_months": {
+    "static_auc": 0.8638379790993135,
+    "adaptive_auc": 0.8727213422911069,
+    "observed_rate": 0.11844444444444445,
+    "static_pred_rate": 0.0546551807405914,
+    "adaptive_pred_rate": 0.1060822627973075
+  },
+  "monitoring": {
+    "shock_month": 24,
+    "psi_alert_before_shock_false_alarm_month": null,
+    "first_psi_warn_month": null,
+    "first_psi_alert_month": null,
+    "first_month_static_auc_drops_0.03": null,
+    "first_snapshot_month_actual_rate_1.5x_predicted": 24,
+    "that_gap_is_only_visible_from_month": 27,
+    "first_ks_significant_month_bonferroni": 24,
+    "ks_false_alarm_before_shock_month": null,
+    "first_score_psi_warn_month": null,
+    "first_score_psi_alert_month": null,
+    "max_feature_psi_any_month": 0.09829490243072289,
+    "max_score_psi_any_month": 0.08763297348149189,
+    "psi_thresholds": {
+      "warn": 0.1,
+      "alert": 0.25
+    }
+  },
+  "top_psi_last_month": {
+    "utilisation": 0.098,
+    "dti": 0.086,
+    "gap_months": 0.073,
+    "payment_ratio_3m": 0.061,
+    "income_mean": 0.06
+  },
+  "production_model_trained_on_months": [
+    25,
+    33
+  ]
+}

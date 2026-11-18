@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Drift monitor</h2>
+
+{% if not summary %}
+<div class="alert alert-warning">No monitoring results yet. Run <code>python -m src.train</code> first.</div>
+{% else %}
+
+<div class="alert alert-secondary">
+All numbers on this page come from <b>simulated</b> borrower data (see README). They show how the
+monitoring works, not how a real lender's portfolio behaves.
+</div>
+
+<p>Models are trained on months 5-17 (a stable period). From month {{ shock }} a simulated
+income shock starts: gig and seasonal workers earn less and risk behaviour changes.
+The model in use was retrained on months {{ trained_on[0] }}-{{ trained_on[1] }}.</p>
+
+<div class="row mb-4">
+  <div class="col-md-3"><div class="card p-3">
+    <div class="text-muted">Default rate before shock</div>
+    <div class="fs-4">{{ "%.1f"|format(summary.data.default_rate_before_shock * 100) }}%</div></div></div>
+  <div class="col-md-3"><div class="card p-3">
+    <div class="text-muted">Default rate after shock</div>
+    <div class="fs-4">{{ "%.1f"|format(summary.data.default_rate_after_shock * 100) }}%</div></div></div>
+  <div class="col-md-3"><div class="card p-3">
+    <div class="text-muted">Static model predicts (post-shock)</div>
+    <div class="fs-4">{{ "%.1f"|format(summary.post_shock_mean.static_pred_rate * 100) }}%</div></div></div>
+  <div class="col-md-3"><div class="card p-3">
+    <div class="text-muted">Actual (post-shock)</div>
+    <div class="fs-4">{{ "%.1f"|format(summary.post_shock_mean.observed_rate * 100) }}%</div></div></div>
+</div>
+
+<h5>What each monitor detected</h5>
+<table class="table table-bordered mb-4">
+<tr><th>Monitor</th><th>Needs labels?</th><th>Result in this simulation</th></tr>
+<tr><td>KS test on features (Bonferroni corrected)</td><td>No</td>
+    <td>{% if summary.monitoring.first_ks_significant_month_bonferroni is not none %}First significant shift in month {{ summary.monitoring.first_ks_significant_month_bonferroni }}{% else %}No significant shift{% endif %};
+    false alarms before the shock: {{ "none" if summary.monitoring.ks_false_alarm_before_shock_month is none else "month " ~ summary.monitoring.ks_false_alarm_before_shock_month }}</td></tr>
+<tr><td>PSI on features (warn {{ summary.monitoring.psi_thresholds.warn }}, alert {{ summary.monitoring.psi_thresholds.alert }})</td><td>No</td>
+    <td>Highest PSI seen: {{ "%.3f"|format(summary.monitoring.max_feature_psi_any_month) }}
+    ({{ "no warning raised" if summary.monitoring.first_psi_warn_month is none else "warning in month " ~ summary.monitoring.first_psi_warn_month }})</td></tr>
+<tr><td>PSI on model scores</td><td>No</td>
+    <td>Highest PSI seen: {{ "%.3f"|format(summary.monitoring.max_score_psi_any_month) }}
+    ({{ "no warning raised" if summary.monitoring.first_score_psi_warn_month is none else "warning in month " ~ summary.monitoring.first_score_psi_warn_month }})</td></tr>
+<tr><td>Actual vs predicted default rate (calibration)</td><td>Yes (3-month delay)</td>
+    <td>Gap of 1.5x or more first appears for month {{ summary.monitoring["first_snapshot_month_actual_rate_1.5x_predicted"] }},
+    but can only be seen from month {{ summary.monitoring.that_gap_is_only_visible_from_month }}</td></tr>
+</table>
+
+<h5>Static vs adaptive model</h5>
+<p>Mean post-shock AUC: static <b>{{ "%.3f"|format(summary.post_shock_mean.static_auc) }}</b>,
+adaptive <b>{{ "%.3f"|format(summary.post_shock_mean.adaptive_auc) }}</b>.
+Brier score (lower is better): static <b>{{ "%.3f"|format(summary.post_shock_mean.static_brier) }}</b>,
+adaptive <b>{{ "%.3f"|format(summary.post_shock_mean.adaptive_brier) }}</b>.</p>
+
+<img class="img-fluid mb-4" src="/results/calibration_over_time.png"
+     alt="Predicted versus actual default rate by month, static and adaptive models">
+<img class="img-fluid mb-4" src="/results/auc_over_time.png"
+     alt="AUC by month, static and adaptive models">
+<img class="img-fluid mb-4" src="/results/psi_heatmap.png"
+     alt="Heatmap of feature PSI by month">
+
+{% endif %}
+
+{% endblock %}

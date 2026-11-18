@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+env/
+.venv/
+.ipynb_checkpoints/
+
+# Secrets
+.env
+
+# Local data and generated artefacts (recreated by `python -m src.train`)
+database.db
+model.pkl
+data/*.csv

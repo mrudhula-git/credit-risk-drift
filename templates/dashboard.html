@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Default risk prediction</h2>
+<p class="text-muted">Built for borrowers with irregular income: the model looks at how
+your income moved over the last {{ window }} months, not just one number.</p>
+
+<div class="row">
+<div class="col-md-5">
+
+<div class="card p-4 mb-4">
+
+<form method="POST">
+
+<label class="form-label">Last {{ window }} monthly incomes (oldest first, comma separated)</label>
+<input name="incomes" class="form-control mb-3" placeholder="e.g. 32000, 18000, 41000, 0, 27000, 35000 (type your own)"
+       value="{{ form.get('incomes', '') }}">
+
+<label class="form-label">Credit score (300-900)</label>
+<input name="credit_score" type="number" min="300" max="900" class="form-control mb-3"
+       value="{{ form.get('credit_score', '') }}">
+
+<label class="form-label">Monthly EMI</label>
+<input name="emi" type="number" min="1" class="form-control mb-3"
+       value="{{ form.get('emi', '') }}">
+
+<label class="form-label">Credit utilisation (%)</label>
+<input name="utilisation" type="number" min="0" max="100" class="form-control mb-3"
+       value="{{ form.get('utilisation', '') }}">
+
+<label class="form-label">EMIs missed in the last 3 months</label>
+<select name="missed" class="form-select mb-3">
+{% for k in range(4) %}
+<option value="{{ k }}" {% if form.get('missed', '0') == k|string %}selected{% endif %}>{{ k }}</option>
+{% endfor %}
+</select>
+
+<button class="btn btn-primary">Predict</button>
+
+</form>
+
+</div>
+</div>
+
+<div class="col-md-7">
+
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+{% if result %}
+<div class="card p-4 mb-3">
+  <h5>Result: <b>{{ result.band }}</b></h5>
+  <p class="mb-1">Estimated chance of default in the next 3 months:
+     <b>{{ "%.1f"|format(result.pd * 100) }}%</b></p>
+  <p class="text-muted mb-2">Average income {{ "{:,.0f}".format(result.income_mean) }},
+     income volatility {{ "%.0f"|format(result.income_cv * 100) }}% (std / mean)</p>
+
+  {% if result.factors %}
+  <p class="mb-1"><b>Main factors</b></p>
+  <ul class="mb-0">
+    {% for f in result.factors %}
+    <li>{{ f.feature }} <span class="text-muted">({{ f.direction }})</span></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</div>
+{% endif %}
+
+{% for w in warnings %}
+<div class="alert alert-warning">{{ w }}</div>
+{% endfor %}
+
+</div>
+</div>
+
+<h4>Recent predictions</h4>
+
+<table class="table table-bordered">
+
+<tr>
+<th>Avg income</th>
+<th>Volatility</th>
+<th>Score</th>
+<th>EMI</th>
+<th>Default chance</th>
+<th>Result</th>
+</tr>
+
+{% for row in logs %}
+
+<tr>
+<td>{{ "{:,.0f}".format(row[0]) }}</td>
+<td>{{ "%.0f"|format(row[1] * 100) }}%</td>
+<td>{{ row[2] }}</td>
+<td>{{ "{:,.0f}".format(row[3]) }}</td>
+<td>{{ "%.1f"|format(row[4] * 100) }}%</td>
+<td>{{ row[5] }}</td>
+</tr>
+
+{% endfor %}
+
+</table>
+
+{% endblock %}
